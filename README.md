@@ -1,4 +1,4 @@
-# DengueConecta 🦟
+# DenGuaT 🦟
 
 **Conecta al paciente con dengue que está en su casa con el médico del centro de salud, para que nadie se agrave sin que lo noten y el dengue no se siga contagiando en la colonia.**
 

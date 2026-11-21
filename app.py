@@ -1,4 +1,4 @@
-"""DengueConecta. Correr con:  streamlit run app.py
+"""DenGuaT. Correr con:  streamlit run app.py
 Para usarla en el celular: misma red wifi, abrir la "Network URL" que imprime Streamlit.
 """
 from datetime import date, timedelta
@@ -14,7 +14,7 @@ import medicinas
 import riesgo
 from lugares import DEPARTAMENTOS, POR_DEPARTAMENTO
 
-st.set_page_config(page_title="DengueConecta", page_icon="🦟", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="DenGuaT", page_icon="🦟", layout="wide", initial_sidebar_state="collapsed")
 
 if not db.pacientes():
     import datos_demo
@@ -151,7 +151,7 @@ def ui_mi_centro(p, r, completo=True):
 
 # ========================================================================= INICIO
 if ss.vista == "inicio":
-    st.markdown("<h1 style='text-align:center'>🦟 DengueConecta</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center'>🦟 DenGuaT</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;font-size:1.2rem'>Si tienes dengue, tu médico te acompaña desde casa.<br>"
                 "Te dice qué no tomar, cuándo ir al hospital y cuida a tu colonia.</p>", unsafe_allow_html=True)
     st.write("")
@@ -416,7 +416,7 @@ else:
                 if alt:
                     msg = (f"Hola {x['nombre'].split()[0]}, tu centro ({c['nombre']}) está saturado. "
                            f"Te recomendamos ir a {alt['nombre']} ({alt['km']:.1f} km, espera ~{alt['est']['espera']} min). "
-                           "DengueConecta")
+                           "DenGuaT")
                     f1, f2 = st.columns([4, 1])
                     f1.write(f"{rx.emoji} **{x['nombre']}** → {alt['nombre']} ({alt['km']:.1f} km)")
                     f2.link_button("📲 WhatsApp", centros.enlace_whatsapp(x["telefono"], msg))
