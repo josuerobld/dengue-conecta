@@ -1,0 +1,7 @@
+streamlit
+pandas
+plotly
+pydeck
+pillow
+# opcional, para leer fotos (necesita el programa Tesseract instalado):
+pytesseract
