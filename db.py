@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 
 RUTA = Path(__file__).parent / "dengue.db"
-
+# sdadas
 
 def con():
     c = sqlite3.connect(RUTA, check_same_thread=False)
