@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.venv/
+mi_app_streamlit/.venv/
+.streamlit/secrets.toml
+*.db-journal
+*.sqlite3-journal
