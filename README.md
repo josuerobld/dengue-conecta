@@ -1,4 +1,4 @@
-# DengueConecta 🦟
+# Denguat 🦟
 
 **Conecta al paciente con dengue que está en su casa con el médico del centro de salud, para que nadie se agrave sin que lo noten y el dengue no se siga contagiando en la colonia.**
 
@@ -13,17 +13,6 @@ streamlit run app.py
 - En la laptop: abre `http://localhost:8501`.
 - En el celular (mismo wifi): abre la **Network URL** que imprime Streamlit. Así el paciente usa el celular y el médico la laptop, **con los mismos datos en vivo**.
 - Leer fotos (OCR) es opcional: `pip install pytesseract` + instalar el programa Tesseract. Si no está, los números y el nombre de la medicina se escriben a mano.
-
-## Deploy en Streamlit Cloud
-GitHub Pages no ejecuta Python, así que la app se despliega en Streamlit Cloud:
-
-1. Sube estos cambios a `main`.
-2. Abre `https://share.streamlit.io/` y selecciona **New app**.
-3. Repo: `josuerobld/dengue-conecta`; branch: `main`; **Main file path**: `app.py`.
-4. En **Advanced settings**, usa Python `3.12`. `requirements.txt` instala las librerías y `packages.txt` instala Tesseract para el OCR.
-5. Haz clic en **Deploy**. La URL tendrá el formato `https://<tu-app>.streamlit.app`.
-
-Los datos se guardan en `dengue.db` dentro del contenedor de la app; se reinician si Streamlit Cloud reinicia el contenedor. Para datos permanentes se necesita una base de datos externa.
 
 ## Pantalla de inicio
 Al abrir la app sale primero la bienvenida con: **registrarme** (primera vez), **entrar con mi teléfono**, **soy médico** y un botón de **demo como Pedro**.
