@@ -1,4 +1,4 @@
-# DenGuaT 🦟
+# DengueConecta 🦟
 
 **Conecta al paciente con dengue que está en su casa con el médico del centro de salud, para que nadie se agrave sin que lo noten y el dengue no se siga contagiando en la colonia.**
 
@@ -30,6 +30,7 @@ Al abrir la app sale primero la bienvenida con: **registrarme** (primera vez), *
 | `riesgo.py` | Reglas de riesgo basadas en el paper (leucopenia < 4,000, hematocrito +20 %, días 4-6) + signos de alarma OMS/OPS + condiciones de riesgo (diabetes, embarazo, hipertensión, riñón, corazón, obesidad, anticoagulantes, úlcera, edad < 1 o ≥ 65) con consejos por condición |
 | `medicinas.py` | "¿Me lo tomo?": clasifica medicinas (AINEs/aspirina 🔴, antibióticos y corticoides 🟠, paracetamol 🟢) y lee hemogramas |
 | `centros.py` | Centros médicos: cercanía (distancia y minutos en carro), saturación (camas + espera), centro recomendado, médico asignado por especialidad, centros reales vía OpenStreetMap |
+| `diferencial.py` | ¿Será dengue? Compara los síntomas con chikungunya, zika, influenza/COVID y malaria, avisa señales de alarma y dice qué hacer (no es diagnóstico; los pesos hay que validarlos con un médico) |
 | `db.py` | Base de datos SQLite compartida paciente/médico |
 | `datos_demo.py` | Pacientes ficticios en Ciudad de Guatemala |
 | `app.py` | La app: vista Paciente y vista Médico |

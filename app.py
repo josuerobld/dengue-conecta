@@ -1,4 +1,4 @@
-"""DenGuaT. Correr con:  streamlit run app.py
+"""DengueConecta. Correr con:  streamlit run app.py
 Para usarla en el celular: misma red wifi, abrir la "Network URL" que imprime Streamlit.
 """
 from datetime import date, timedelta
@@ -9,12 +9,13 @@ import pydeck as pdk
 import streamlit as st
 
 import centros
+import diferencial
 import db
 import medicinas
 import riesgo
 from lugares import DEPARTAMENTOS, POR_DEPARTAMENTO
 
-st.set_page_config(page_title="DenGuaT", page_icon="🦟", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="DengueConecta", page_icon="🦟", layout="wide", initial_sidebar_state="collapsed")
 
 if not db.pacientes():
     import datos_demo
@@ -149,9 +150,41 @@ def ui_mi_centro(p, r, completo=True):
     return orden
 
 
+def ui_diferencial(pref, embarazada=False):
+    """¿Será dengue? Compara con enfermedades parecidas. No es un diagnóstico."""
+    st.write("Muchas enfermedades se parecen al dengue. Marca lo que sientes y te decimos con cuál se parece más "
+             "y qué hacer. **Solo un examen de sangre lo confirma.**")
+    st.markdown("**Lo que siento:**")
+    marcados = [k for k, (txt, _) in diferencial.SINTOMAS.items() if st.checkbox(txt, key=f"{pref}s_{k}")]
+    st.markdown("**¿Tienes alguna de estas señales de alarma?**")
+    alarmas = [k for k, txt in diferencial.ALARMA.items() if st.checkbox(txt, key=f"{pref}a_{k}")]
+    res = diferencial.evaluar(marcados, alarmas, embarazada)
+    st.divider()
+    if alarmas:
+        st.error("🚨 **Ve HOY al centro de salud o a emergencia**, sea dengue o no. Tienes señales de alarma.")
+    if res["pocos_datos"]:
+        st.info("Marca por lo menos dos síntomas para ver con qué se parece.")
+        return None
+    icono = {"más compatible": "🔴", "también posible": "🟡", "menos probable": "⚪"}
+    for x in res["ranking"]:
+        if x["nivel"] != "menos probable":
+            st.write(f"{icono[x['nivel']]} **{x['nombre']}**: {x['nivel']}")
+    top = res["ranking"][0]
+    st.markdown(f"**Qué hacer:** {diferencial.QUE_HACER[top['clave']]}")
+    if top["clave"] != "dengue" and "sin_fiebre" not in marcados:
+        st.warning("Aunque se parezca más a otra enfermedad, **no se descarta el dengue**. "
+                   "Mientras tanto: solo paracetamol, nada de ibuprofeno ni aspirina.")
+    if res["embarazada_riesgo"]:
+        st.error("🤰 Estás embarazada y tienes síntomas que pueden ser de Zika o dengue: consulta HOY a tu médico.")
+    if res["ir_hoy"] and not alarmas:
+        st.warning("📍 Por lo que marcaste, conviene que te vea un médico **hoy**.")
+    st.caption("Esto es una orientación para el paciente. No es un diagnóstico ni reemplaza al médico.")
+    return res, bool(alarmas)
+
+
 # ========================================================================= INICIO
 if ss.vista == "inicio":
-    st.markdown("<h1 style='text-align:center'>🦟 DenGuaT</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center'>🦟 DengueConecta</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;font-size:1.2rem'>Si tienes dengue, tu médico te acompaña desde casa.<br>"
                 "Te dice qué no tomar, cuándo ir al hospital y cuida a tu colonia.</p>", unsafe_allow_html=True)
     st.write("")
@@ -161,6 +194,8 @@ if ss.vista == "inicio":
             ir("registro")
         if st.button("🔑 Ya me registré: entrar con mi teléfono", width="stretch"):
             ir("entrar")
+        if st.button("🔎 ¿Será dengue? Empieza aquí", width="stretch"):
+            ir("sintomas")
         st.divider()
         if st.button("🩺 Soy médico del centro de salud", width="stretch"):
             ir("medico")
@@ -169,6 +204,39 @@ if ss.vista == "inicio":
             pedro = next((x for x in db.pacientes() if x["nombre"] == "Pedro Xol"), None)
             if pedro:
                 ir("paciente", pid=pedro["id"])
+    st.stop()
+
+# ======================================================================= SÍNTOMAS
+if ss.vista == "sintomas":
+    if st.button("⬅️ Volver"):
+        ir("inicio")
+    st.title("🔎 Antes de empezar")
+    ya = st.radio("¿Ya fuiste con un médico por esto?",
+                  ["No, todavía no", "Sí, y me dijeron que tengo dengue", "Sí, y me dijeron que es otra cosa"],
+                  key="sint_ya")
+    if ya.startswith("Sí, y me dijeron que tengo"):
+        st.success("Entonces DengueConecta te ayuda a cuidarte en casa y a que tu médico te siga de cerca.")
+        if st.button("📝 Registrarme y seguir mi dengue", type="primary"):
+            ir("registro")
+    elif ya.startswith("Sí, y me dijeron que es otra"):
+        st.info("Entonces sigue las indicaciones de tu médico. Si te sale fiebre alta, dolor detrás de los ojos o "
+                "sangrado, o te sientes peor, vuelve aquí y revisa de nuevo.")
+    else:
+        st.write("Revisemos tus síntomas: se parece **gripe, alergia, dengue** y otras enfermedades.")
+        emb = st.checkbox("Estoy embarazada o podría estarlo", key="sint_emb")
+        out = ui_diferencial("ini_", emb)
+        if out:
+            res, alarma = out
+            dengue = next(x for x in res["ranking"] if x["clave"] == "dengue")
+            if alarma or dengue["nivel"] in ("más compatible", "también posible"):
+                st.markdown("### Puede ser dengue: empecemos a cuidarte")
+                if st.button("📝 Registrarme y seguir mi dengue", type="primary", key="sint_reg"):
+                    ir("registro")
+            else:
+                st.markdown("### Por lo que marcaste, no parece dengue")
+                st.caption("Si te sale fiebre alta, dolor detrás de los ojos o te sientes peor, vuelve a revisar.")
+                if st.button("Igual quiero registrarme", key="sint_reg2"):
+                    ir("registro")
     st.stop()
 
 # ======================================================================= REGISTRO
@@ -255,8 +323,8 @@ if rol == "👤 Paciente":
                 "Mira tus cuidados en la pestaña **❤️ Mi salud**.")
 
     ui_mi_centro(p, r)
-    t1, t2, t3, tc, t4, t5 = st.tabs(["✅ Chequeo de hoy", "🧪 Mi hemograma", "💊 ¿Me lo tomo?",
-                                      "🏥 Mi centro", "❤️ Mi salud", "🦟 No contagies"])
+    t1, t2, t3, tc, t4, t5, td = st.tabs(["✅ Chequeo de hoy", "🧪 Mi hemograma", "💊 ¿Me lo tomo?",
+                                          "🏥 Mi centro", "❤️ Mi salud", "🦟 No contagies", "🔎 ¿Es dengue?"])
 
     with t1:
         with st.form("chequeo"):
@@ -369,6 +437,9 @@ if rol == "👤 Paciente":
                     db.actualizar_perfil(p["id"], nuevas, meds)
                     st.rerun()
 
+    with td:
+        ui_diferencial("pac_", "embarazo" in p.get("condiciones", []))
+
     with t5:
         st.markdown("""
 **Mientras tengas fiebre, un mosquito que te pique se infecta y puede contagiar a tu familia.**
@@ -416,7 +487,7 @@ else:
                 if alt:
                     msg = (f"Hola {x['nombre'].split()[0]}, tu centro ({c['nombre']}) está saturado. "
                            f"Te recomendamos ir a {alt['nombre']} ({alt['km']:.1f} km, espera ~{alt['est']['espera']} min). "
-                           "DenGuaT")
+                           "DengueConecta")
                     f1, f2 = st.columns([4, 1])
                     f1.write(f"{rx.emoji} **{x['nombre']}** → {alt['nombre']} ({alt['km']:.1f} km)")
                     f2.link_button("📲 WhatsApp", centros.enlace_whatsapp(x["telefono"], msg))

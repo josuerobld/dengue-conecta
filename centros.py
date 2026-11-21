@@ -166,7 +166,7 @@ def buscar_osm(lat: float, lon: float, radio_m: int = 6000, limite: int = 12) ->
         q = (f'[out:json][timeout:15];nwr["amenity"~"^(hospital|clinic)$"]["name"]'
              f"(around:{radio_m},{lat},{lon});out center 60;")
         r = requests.post("https://overpass-api.de/api/interpreter", data={"data": q},
-                          headers={"User-Agent": "DenGuaT-hackathon"}, timeout=20)
+                          headers={"User-Agent": "DengueConecta-hackathon"}, timeout=20)
         r.raise_for_status()
         elementos = r.json().get("elements", [])
     except Exception:
